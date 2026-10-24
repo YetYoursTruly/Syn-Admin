@@ -1,0 +1,8 @@
+{
+  "Defaults": {
+    "ShowLoaderBackground": true,
+    "StartTab": "Home",
+    "SignedIn": false,
+    "SharedCommunityDataLevel": 1 
+  }
+}
