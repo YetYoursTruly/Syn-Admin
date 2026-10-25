@@ -7,7 +7,7 @@ local COLORS = {
     Raised = Color3.fromRGB(22, 22, 22),
     Text = Color3.fromRGB(245, 246, 248),
     Muted = Color3.fromRGB(145, 147, 153),
-    Accent = Color3.fromRGB(218, 231, 255),
+    Accent = Color3.fromRGB(255, 255, 255),
     Border = Color3.fromRGB(255, 255, 255),
 }
 
@@ -59,7 +59,7 @@ function PageManager.new(options)
         Name = "Window",
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 12),
-        Size = UDim2.new(0.72, 0, 0.68, 0),
+        Size = UDim2.new(0.5, 0, 0.5, 0),
         BackgroundColor3 = COLORS.Background,
         BackgroundTransparency = 0,
         BorderSizePixel = 0,
@@ -68,8 +68,8 @@ function PageManager.new(options)
     }, self.Gui)
     self.Window = window
     create("UISizeConstraint", {
-        MinSize = Vector2.new(380, 280),
-        MaxSize = Vector2.new(760, 520),
+        MinSize = Vector2.new(340, 250),
+        MaxSize = Vector2.new(460, 330),
     }, window)
     self.WindowScale = create("UIScale", { Scale = 0.965 }, window)
     create("UICorner", { CornerRadius = UDim.new(0, 14) }, window)
@@ -80,8 +80,8 @@ function PageManager.new(options)
     }, window)
     self.GlowStroke = create("UIStroke", {
         Color = COLORS.Accent,
-        Thickness = 9,
-        Transparency = 0.82,
+        Thickness = 6,
+        Transparency = 0.86,
     }, window)
 
     local entranceInfo = TweenInfo.new(0.48, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
@@ -93,13 +93,13 @@ function PageManager.new(options)
 
     self.GlowTween = self.TweenService:Create(self.GlowStroke,
         TweenInfo.new(2.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        { Transparency = 0.94 }
+        { Transparency = 0.96 }
     )
     self.GlowTween:Play()
 
     self.Sidebar = create("Frame", {
         Name = "Sidebar",
-        Size = UDim2.new(0, 156, 1, 0),
+        Size = UDim2.new(0, 120, 1, 0),
         BackgroundColor3 = COLORS.Surface,
         BorderSizePixel = 0,
     }, window)
@@ -114,31 +114,31 @@ function PageManager.new(options)
 
     create("TextLabel", {
         Name = "Title",
-        Position = UDim2.new(0, 17, 0, 18),
-        Size = UDim2.new(1, -32, 0, 26),
+        Position = UDim2.new(0, 14, 0, 15),
+        Size = UDim2.new(1, -26, 0, 23),
         BackgroundTransparency = 1,
         Text = options.Title or "Syn-Admin",
         TextColor3 = COLORS.Text,
-        TextSize = 16,
+        TextSize = 14,
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
     }, self.Sidebar)
 
     self.Nav = create("Frame", {
         Name = "PageNavigation",
-        Position = UDim2.new(0, 9, 0, 58),
-        Size = UDim2.new(1, -18, 1, -70),
+        Position = UDim2.new(0, 7, 0, 49),
+        Size = UDim2.new(1, -14, 1, -58),
         BackgroundTransparency = 1,
     }, self.Sidebar)
     create("UIListLayout", {
-        Padding = UDim.new(0, 7),
+        Padding = UDim.new(0, 5),
         SortOrder = Enum.SortOrder.LayoutOrder,
     }, self.Nav)
 
     self.Content = create("Frame", {
         Name = "PageContainer",
-        Position = UDim2.new(0, 156, 0, 0),
-        Size = UDim2.new(1, -156, 1, 0),
+        Position = UDim2.new(0, 120, 0, 0),
+        Size = UDim2.new(1, -120, 1, 0),
         BackgroundTransparency = 1,
         ClipsDescendants = true,
     }, window)
@@ -146,8 +146,8 @@ function PageManager.new(options)
     local closeButton = create("TextButton", {
         Name = "CloseButton",
         AnchorPoint = Vector2.new(1, 0),
-        Position = UDim2.new(1, -12, 0, 10),
-        Size = UDim2.fromOffset(30, 30),
+        Position = UDim2.new(1, -9, 0, 8),
+        Size = UDim2.fromOffset(26, 26),
         BackgroundColor3 = COLORS.Raised,
         BackgroundTransparency = 0.25,
         BorderSizePixel = 0,
@@ -175,20 +175,20 @@ function PageManager:AddPage(name, build, options)
     local button = create("TextButton", {
         Name = name .. "Tab",
         LayoutOrder = order,
-        Size = UDim2.new(1, 0, 0, 40),
+        Size = UDim2.new(1, 0, 0, 34),
         BackgroundColor3 = COLORS.Surface,
         AutoButtonColor = false,
         BorderSizePixel = 0,
         Text = (options.Icon and (tostring(options.Icon) .. "   ") or "") .. name,
         TextColor3 = COLORS.Muted,
-        TextSize = 14,
+        TextSize = 12,
         Font = Enum.Font.GothamMedium,
         TextXAlignment = Enum.TextXAlignment.Left,
     }, self.Nav)
     create("UICorner", { CornerRadius = UDim.new(0, 8) }, button)
     create("UIPadding", {
-        PaddingLeft = UDim.new(0, 12),
-        PaddingRight = UDim.new(0, 8),
+        PaddingLeft = UDim.new(0, 9),
+        PaddingRight = UDim.new(0, 6),
     }, button)
 
     local page = create("CanvasGroup", {
