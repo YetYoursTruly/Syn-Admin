@@ -1,5 +1,5 @@
 -- Syn-Admin bootstrap. Run with:
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/YetYoursTruly/Syn-Admin/main/Loader.lua"))()({ Debug = true })
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/YetYoursTruly/Syn-Admin/main/Loader.lua"))({ Debug = true })
 -- Debug modules are opt-in and only execute when Debug = true is passed.
 
 local OWNER = "YetYoursTruly"
@@ -83,7 +83,8 @@ local function Debug(manager, files)
     end
 end
 
-return function(options)
+local initialOptions = ...
+local function startSynAdmin(options)
     if options == true then
         options = { Debug = true }
     else
@@ -133,3 +134,10 @@ return function(options)
 
     return manager
 end
+
+-- Support both loadstring(source)(options) and the older two-step form:
+-- loadstring(source)()(options).
+if initialOptions == nil then
+    return startSynAdmin
+end
+return startSynAdmin(initialOptions)

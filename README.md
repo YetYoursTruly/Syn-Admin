@@ -7,19 +7,23 @@
 named by `StartPage` (or `Loading` by default).
 
 ```lua
-local startSynAdmin = loadstring(game:HttpGet(
+local pageManager = loadstring(game:HttpGet(
     "https://raw.githubusercontent.com/YetYoursTruly/Syn-Admin/main/Loader.lua"
-))()
-local pageManager = startSynAdmin({ StartPage = "Loading" })
+))({ StartPage = "Loading" })
 ```
 
 Pass `true` or `{ Debug = true }` to opt into loading every Lua module under
 `Debug/`:
 
 ```lua
-local pageManager = startSynAdmin({ Debug = true })
--- Short form: startSynAdmin(true)
--- One line: loadstring(game:HttpGet("https://raw.githubusercontent.com/YetYoursTruly/Syn-Admin/main/Loader.lua"))()(true)
+local pageManager = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/YetYoursTruly/Syn-Admin/main/Loader.lua"
+))({ Debug = true })
+-- Short form: loadstring(game:HttpGet("https://raw.githubusercontent.com/YetYoursTruly/Syn-Admin/main/Loader.lua"))(true)
+
+-- The older two-step form is still supported:
+-- local startSynAdmin = loadstring(game:HttpGet(url))()
+-- local pageManager = startSynAdmin({ Debug = true })
 ```
 
 Debug modules should return a function that receives a context table. They
