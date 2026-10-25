@@ -2,12 +2,13 @@ local PageManager = {}
 PageManager.__index = PageManager
 
 local COLORS = {
-    Background = Color3.fromRGB(10, 12, 18),
-    Surface = Color3.fromRGB(17, 20, 29),
-    Raised = Color3.fromRGB(26, 30, 42),
-    Text = Color3.fromRGB(235, 239, 248),
-    Muted = Color3.fromRGB(146, 155, 174),
-    Accent = Color3.fromRGB(111, 153, 255),
+    Background = Color3.fromRGB(4, 4, 4),
+    Surface = Color3.fromRGB(8, 8, 8),
+    Raised = Color3.fromRGB(22, 22, 22),
+    Text = Color3.fromRGB(245, 246, 248),
+    Muted = Color3.fromRGB(145, 147, 153),
+    Accent = Color3.fromRGB(218, 231, 255),
+    Border = Color3.fromRGB(255, 255, 255),
 }
 
 local function create(className, props, parent)
@@ -54,25 +55,51 @@ function PageManager.new(options)
         DisplayOrder = 10000,
     }, options.Parent or defaultParent())
 
-    local window = create("Frame", {
+    local window = create("CanvasGroup", {
         Name = "Window",
         AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.5),
-        Size = UDim2.new(0.82, 0, 0.78, 0),
+        Position = UDim2.new(0.5, 0, 0.5, 12),
+        Size = UDim2.new(0.72, 0, 0.68, 0),
         BackgroundColor3 = COLORS.Background,
+        BackgroundTransparency = 0,
         BorderSizePixel = 0,
+        GroupTransparency = 1,
+        ClipsDescendants = true,
     }, self.Gui)
     self.Window = window
     create("UISizeConstraint", {
-        MinSize = Vector2.new(420, 280),
-        MaxSize = Vector2.new(980, 680),
+        MinSize = Vector2.new(380, 280),
+        MaxSize = Vector2.new(760, 520),
     }, window)
+    self.WindowScale = create("UIScale", { Scale = 0.965 }, window)
     create("UICorner", { CornerRadius = UDim.new(0, 14) }, window)
-    create("UIStroke", { Color = COLORS.Raised, Thickness = 1 }, window)
+    self.EdgeStroke = create("UIStroke", {
+        Color = COLORS.Border,
+        Thickness = 1,
+        Transparency = 0.3,
+    }, window)
+    self.GlowStroke = create("UIStroke", {
+        Color = COLORS.Accent,
+        Thickness = 9,
+        Transparency = 0.82,
+    }, window)
+
+    local entranceInfo = TweenInfo.new(0.48, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    self.TweenService:Create(window, entranceInfo, {
+        Position = UDim2.fromScale(0.5, 0.5),
+        GroupTransparency = 0,
+    }):Play()
+    self.TweenService:Create(self.WindowScale, entranceInfo, { Scale = 1 }):Play()
+
+    self.GlowTween = self.TweenService:Create(self.GlowStroke,
+        TweenInfo.new(2.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+        { Transparency = 0.94 }
+    )
+    self.GlowTween:Play()
 
     self.Sidebar = create("Frame", {
         Name = "Sidebar",
-        Size = UDim2.new(0, 176, 1, 0),
+        Size = UDim2.new(0, 156, 1, 0),
         BackgroundColor3 = COLORS.Surface,
         BorderSizePixel = 0,
     }, window)
@@ -87,20 +114,20 @@ function PageManager.new(options)
 
     create("TextLabel", {
         Name = "Title",
-        Position = UDim2.new(0, 18, 0, 19),
-        Size = UDim2.new(1, -34, 0, 28),
+        Position = UDim2.new(0, 17, 0, 18),
+        Size = UDim2.new(1, -32, 0, 26),
         BackgroundTransparency = 1,
         Text = options.Title or "Syn-Admin",
         TextColor3 = COLORS.Text,
-        TextSize = 18,
+        TextSize = 16,
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
     }, self.Sidebar)
 
     self.Nav = create("Frame", {
         Name = "PageNavigation",
-        Position = UDim2.new(0, 10, 0, 64),
-        Size = UDim2.new(1, -20, 1, -78),
+        Position = UDim2.new(0, 9, 0, 58),
+        Size = UDim2.new(1, -18, 1, -70),
         BackgroundTransparency = 1,
     }, self.Sidebar)
     create("UIListLayout", {
@@ -110,11 +137,30 @@ function PageManager.new(options)
 
     self.Content = create("Frame", {
         Name = "PageContainer",
-        Position = UDim2.new(0, 176, 0, 0),
-        Size = UDim2.new(1, -176, 1, 0),
+        Position = UDim2.new(0, 156, 0, 0),
+        Size = UDim2.new(1, -156, 1, 0),
         BackgroundTransparency = 1,
         ClipsDescendants = true,
     }, window)
+
+    local closeButton = create("TextButton", {
+        Name = "CloseButton",
+        AnchorPoint = Vector2.new(1, 0),
+        Position = UDim2.new(1, -12, 0, 10),
+        Size = UDim2.fromOffset(30, 30),
+        BackgroundColor3 = COLORS.Raised,
+        BackgroundTransparency = 0.25,
+        BorderSizePixel = 0,
+        AutoButtonColor = false,
+        Text = "×",
+        TextColor3 = COLORS.Muted,
+        TextSize = 20,
+        Font = Enum.Font.Gotham,
+    }, window)
+    create("UICorner", { CornerRadius = UDim.new(0, 8) }, closeButton)
+    closeButton.Activated:Connect(function()
+        self:Close()
+    end)
 
     return self
 end
@@ -131,7 +177,7 @@ function PageManager:AddPage(name, build, options)
         LayoutOrder = order,
         Size = UDim2.new(1, 0, 0, 40),
         BackgroundColor3 = COLORS.Surface,
-        AutoButtonColor = true,
+        AutoButtonColor = false,
         BorderSizePixel = 0,
         Text = (options.Icon and (tostring(options.Icon) .. "   ") or "") .. name,
         TextColor3 = COLORS.Muted,
@@ -166,6 +212,22 @@ function PageManager:AddPage(name, build, options)
     button.Activated:Connect(function()
         self:Open(name)
     end)
+    button.MouseEnter:Connect(function()
+        if self.ActivePage ~= name then
+            self.TweenService:Create(button, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                BackgroundColor3 = COLORS.Raised,
+                TextColor3 = COLORS.Text,
+            }):Play()
+        end
+    end)
+    button.MouseLeave:Connect(function()
+        if self.ActivePage ~= name then
+            self.TweenService:Create(button, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                BackgroundColor3 = COLORS.Surface,
+                TextColor3 = COLORS.Muted,
+            }):Play()
+        end
+    end)
     return page
 end
 
@@ -180,8 +242,13 @@ function PageManager:Open(name, duration)
     local tweenInfo = TweenInfo.new(tweenDuration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
     for pageName, page in pairs(self.Pages) do
-        page.Button.BackgroundColor3 = pageName == name and COLORS.Raised or COLORS.Surface
-        page.Button.TextColor3 = pageName == name and COLORS.Text or COLORS.Muted
+        self.TweenService:Create(page.Button,
+            TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                BackgroundColor3 = pageName == name and COLORS.Raised or COLORS.Surface,
+                TextColor3 = pageName == name and COLORS.Text or COLORS.Muted,
+            }
+        ):Play()
     end
 
     if self.ActivePage then
@@ -222,7 +289,30 @@ end
 
 function PageManager:Destroy()
     self._transition = self._transition + 1
+    if self.GlowTween then self.GlowTween:Cancel() end
     if self.Gui then self.Gui:Destroy() end
+end
+
+function PageManager:Close()
+    if self._closing or not self.Gui then return end
+    self._closing = true
+    self._transition = self._transition + 1
+    if self.GlowTween then self.GlowTween:Cancel() end
+
+    local closeTween = self.TweenService:Create(self.Window,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { GroupTransparency = 1, Position = UDim2.new(0.5, 0, 0.5, 10) }
+    )
+    self.TweenService:Create(self.WindowScale,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { Scale = 0.97 }
+    ):Play()
+    closeTween.Completed:Connect(function(playbackState)
+        if playbackState == Enum.PlaybackState.Completed then
+            self:Destroy()
+        end
+    end)
+    closeTween:Play()
 end
 
 return PageManager
