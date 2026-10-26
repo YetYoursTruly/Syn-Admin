@@ -143,6 +143,7 @@ local function startSynAdmin(options)
         Title = options.Title or "Syn-Admin",
         TweenDuration = options.TweenDuration,
     })
+    manager.ResolveAsset = customAsset
 
 
     local scriptManagerModule = runModule("ScriptManager.lua", getSource("ScriptManager.lua"))
@@ -210,6 +211,7 @@ if initialOptions == nil then
     return startSynAdmin({})
 end
 return startSynAdmin(initialOptions)
+
 
 
 
