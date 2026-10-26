@@ -104,12 +104,31 @@ local function startSynAdmin(options)
         TweenDuration = options.TweenDuration,
     })
 
+
+    local scriptManagerModule = runModule("ScriptManager.lua", getSource("ScriptManager.lua"))
+    assert(type(scriptManagerModule) == "table" and type(scriptManagerModule.new) == "function",
+        "ScriptManager.lua must return a table with a new() function")
+    local scriptManager = scriptManagerModule.new({ Context = {
+        PageManager = manager,
+        Game = game,
+        Players = game:GetService("Players"),
+        Workspace = game:GetService("Workspace"),
+        HttpService = HttpService,
+    } })
+    for _, path in ipairs(listLuaFiles(tree, "Scripts")) do
+        local script = runModule(path, getSource(path))
+        if script ~= nil then
+            local ok, err = pcall(scriptManager.Add, scriptManager, script, path)
+            if not ok then warn("[Syn-Admin] Invalid script descriptor (" .. path .. "): " .. tostring(err)) end
+        end
+    end
+
     local pageFiles = listLuaFiles(tree, "Pages")
     assert(#pageFiles > 0, "No Lua page modules were found in Pages/")
     for _, path in ipairs(pageFiles) do
         local module = runModule(path, getSource(path))
         if type(module) == "function" then
-            local ok, err = pcall(module, manager)
+            local ok, err = pcall(module, manager, scriptManager)
             if not ok then warn("[Syn-Admin] Page failed (" .. path .. "): " .. tostring(err)) end
         elseif type(module) == "table" and type(module.Build) == "function" then
             local ok, err = pcall(function()
@@ -141,3 +160,5 @@ if initialOptions == nil then
     return startSynAdmin
 end
 return startSynAdmin(initialOptions)
+
+
