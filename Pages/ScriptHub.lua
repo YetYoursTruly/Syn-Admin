@@ -18,7 +18,7 @@ return function(PageManager, ScriptManager)
     PageManager:AddPage("Script Hub", function(page)
         local heading = label(page, "Heading", "Script Hub", UDim2.new(0, 20, 0, 16), UDim2.new(1, -40, 0, 28), 20, Color3.fromRGB(245, 246, 248))
         heading.Font = Enum.Font.GothamBold
-        label(page, "Description", "Built-in scripts available for this client.", UDim2.new(0, 20, 0, 45), UDim2.new(1, -40, 0, 24), 12, Color3.fromRGB(145, 147, 153))
+        label(page, "Description", "Choose a plugin to load.", UDim2.new(0, 20, 0, 45), UDim2.new(1, -40, 0, 24), 12, Color3.fromRGB(145, 147, 153))
         local status = label(page, "Status", "Ready", UDim2.new(0, 20, 1, -31), UDim2.new(1, -40, 0, 20), 11, Color3.fromRGB(145, 147, 153))
 
         local list = Instance.new("ScrollingFrame")
@@ -47,29 +47,39 @@ return function(PageManager, ScriptManager)
             card.Parent = list
             Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
 
-            local title = label(card, "Name", script.Name, UDim2.new(0, 12, 0, 8), UDim2.new(1, -105, 0, 20), 13, Color3.fromRGB(245, 246, 248))
+            local icon = Instance.new("ImageLabel")
+            icon.Name = "Icon"
+            icon.Position = UDim2.new(0, 10, 0.5, -21)
+            icon.Size = UDim2.fromOffset(42, 42)
+            icon.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            icon.BorderSizePixel = 0
+            icon.Image = script.Icon or ScriptManager.DefaultIcon or ""
+            icon.ScaleType = Enum.ScaleType.Crop
+            icon.Parent = card
+            Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 7)
+
+            local title = label(card, "Name", script.Name, UDim2.new(0, 61, 0, 8), UDim2.new(1, -154, 0, 20), 13, Color3.fromRGB(245, 246, 248))
             title.Font = Enum.Font.GothamSemibold
             label(card, "Details", script.Description .. "  ·  " .. script.Game .. "  ·  v" .. script.Version,
-                UDim2.new(0, 12, 0, 31), UDim2.new(1, -105, 0, 34), 10, Color3.fromRGB(145, 147, 153))
+                UDim2.new(0, 61, 0, 31), UDim2.new(1, -154, 0, 34), 10, Color3.fromRGB(145, 147, 153))
 
             local run = Instance.new("TextButton")
             run.Name = "Load"
             run.AnchorPoint = Vector2.new(1, 0.5)
             run.Position = UDim2.new(1, -9, 0.5, 0)
-            run.Size = UDim2.fromOffset(70, 30)
-            run.BackgroundColor3 = Color3.fromRGB(52, 52, 52)
+            run.Size = UDim2.fromOffset(74, 32)
+            run.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             run.BorderSizePixel = 0
             run.AutoButtonColor = true
-            run.Font = Enum.Font.GothamMedium
+            run.Font = Enum.Font.GothamSemibold
             run.Text = "Load"
-            run.TextColor3 = Color3.fromRGB(245, 246, 248)
-            run.TextSize = 11
+            run.TextColor3 = Color3.fromRGB(20, 20, 20)
+            run.TextSize = 12
             run.Parent = card
             Instance.new("UICorner", run).CornerRadius = UDim.new(0, 7)
 
             run.Activated:Connect(function()
                 run.Active = false
-                run.Text = "Loading"
                 status.Text = "Loading " .. script.Name .. "..."
                 status.TextColor3 = Color3.fromRGB(235, 190, 90)
                 task.spawn(function()
@@ -96,8 +106,7 @@ return function(PageManager, ScriptManager)
             end)
         end
         if #scripts == 0 then
-            label(list, "Empty", "No built-in scripts found. Add a descriptor under Scripts/.", UDim2.new(), UDim2.new(1, -8, 0, 44), 12, Color3.fromRGB(145, 147, 153))
+            label(list, "Empty", "No plugin folders found. Add a folder with Loader.lua under Scripts/.", UDim2.new(), UDim2.new(1, -8, 0, 44), 12, Color3.fromRGB(145, 147, 153))
         end
     end, { Icon = "⇧" })
 end
-

@@ -44,6 +44,46 @@ end
 local function getSource(path)
     return httpGet(RAW_ROOT .. encodePath(path))
 end
+local function listPluginEntries(tree)
+    local entries, icons = {}, {}
+    for _, item in ipairs(tree.tree or {}) do
+        if item.type == "blob" then
+            local folder = item.path:match("^(Scripts/.+)/Loader%.lua$")
+            if folder then entries[folder] = { Folder = folder, LoaderPath = item.path } end
+            local iconFolder = item.path:match("^(Scripts/.+)/icon%.png$")
+            if iconFolder then icons[iconFolder] = item.path end
+        end
+    end
+    local result = {}
+    for folder, entry in pairs(entries) do
+        entry.IconPath = icons[folder]
+        table.insert(result, entry)
+    end
+    table.sort(result, function(a, b) return a.Folder < b.Folder end)
+    return result
+end
+
+local function customAsset(path)
+    local assetFunction = getcustomasset or getsynasset
+    if type(assetFunction) ~= "function" or type(isfolder) ~= "function"
+        or type(makefolder) ~= "function" or type(isfile) ~= "function"
+        or type(writefile) ~= "function" then return nil end
+
+    local folder = "Syn-Admin/ScriptIcons"
+    pcall(function()
+        if not isfolder("Syn-Admin") then makefolder("Syn-Admin") end
+        if not isfolder(folder) then makefolder(folder) end
+    end)
+    local filename = folder .. "/" .. path:gsub("[^%w_%-%.]", "_")
+    if not isfile(filename) then
+        local ok, bytes = pcall(httpGet, RAW_ROOT .. encodePath(path))
+        if not ok then return nil end
+        local wrote = pcall(writefile, filename, bytes)
+        if not wrote then return nil end
+    end
+    local ok, uri = pcall(assetFunction, filename)
+    return ok and uri or nil
+end
 
 local function compile(path, source)
     assert(type(loadstring) == "function", "This executor does not support loadstring")
@@ -108,19 +148,29 @@ local function startSynAdmin(options)
     local scriptManagerModule = runModule("ScriptManager.lua", getSource("ScriptManager.lua"))
     assert(type(scriptManagerModule) == "table" and type(scriptManagerModule.new) == "function",
         "ScriptManager.lua must return a table with a new() function")
-    local scriptManager = scriptManagerModule.new({ Context = {
+    local defaultIcon = customAsset("Assets/Images/x.png") or ""
+    local scriptManager = scriptManagerModule.new({
         PageManager = manager,
-        Game = game,
-        Players = game:GetService("Players"),
-        Workspace = game:GetService("Workspace"),
-        HttpService = HttpService,
-    } })
-    for _, path in ipairs(listLuaFiles(tree, "Scripts")) do
-        local script = runModule(path, getSource(path))
-        if script ~= nil then
-            local ok, err = pcall(scriptManager.Add, scriptManager, script, path)
-            if not ok then warn("[Syn-Admin] Invalid script descriptor (" .. path .. "): " .. tostring(err)) end
-        end
+        Fetch = getSource,
+        ResolveIcon = customAsset,
+        DefaultIcon = defaultIcon,
+        Services = {
+            Game = game,
+            Players = game:GetService("Players"),
+            Workspace = game:GetService("Workspace"),
+            HttpService = HttpService,
+        },
+    })
+    for _, entry in ipairs(listPluginEntries(tree)) do
+        local name = entry.Folder:match("([^/]+)$")
+        local ok, err = pcall(scriptManager.Add, scriptManager, {
+            Id = entry.Folder,
+            Name = name,
+            Description = "Plugin from " .. entry.Folder,
+            LoaderPath = entry.LoaderPath,
+            IconPath = entry.IconPath,
+        })
+        if not ok then warn("[Syn-Admin] Invalid plugin entry (" .. entry.LoaderPath .. "): " .. tostring(err)) end
     end
 
     local pageFiles = listLuaFiles(tree, "Pages")
@@ -160,5 +210,7 @@ if initialOptions == nil then
     return startSynAdmin
 end
 return startSynAdmin(initialOptions)
+
+
 
 

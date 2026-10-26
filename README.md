@@ -56,28 +56,38 @@ For this unauthenticated `loadstring` setup, the repository must be publicly
 readable. Never put a GitHub token in `Loader.lua`.
 
 
-## Built-in scripts and Script Hub
 
-Add a Lua module anywhere under `Scripts/`. Each module must return a descriptor
-with this structure; the Script Hub lists it and runs `Load(context)` when the
-user presses its Load button:
+## Script Hub plugins
 
-```lua
-return {
-    Id = "Example/Hello", -- unique; defaults to the path under Scripts/
-    Name = "Hello",
-    Description = "A short description shown in Script Hub.",
-    Author = "Your name",
-    Version = "1.0.0",
-    Game = "Universal", -- label only, for example a game name
-    Category = "Utility",
-    Load = function(context)
-        -- context includes PageManager, Game, Players, Workspace, HttpService,
-        -- and context.Script (this descriptor).
-        print("Hello from " .. context.Script.Name)
-    end,
-}
+Each plugin is a folder under `Scripts/` containing `Loader.lua`. An optional
+`icon.png` in that same folder is shown in Script Hub. If it is missing, the
+hub uses `Assets/Images/x.png`.
+
+```text
+Scripts/
+  Example/
+    Loader.lua
+    icon.png       # optional
 ```
 
-The loader fetches descriptors from this repository's `Scripts/` folder at
-startup. Script code only runs after the user selects Load in Script Hub.
+The Hub registers folders from their `Loader.lua` path. Pressing its white
+**Load** button downloads and compiles that `Loader.lua` with `loadstring`.
+The loader receives a plugin context as `...`; it can also return a function
+that receives the same context:
+
+```lua
+local plugin = ...
+plugin:AddPage("Example", function(page)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -32, 0, 32)
+    label.Position = UDim2.new(0, 16, 0, 16)
+    label.BackgroundTransparency = 1
+    label.Text = "Example plugin page"
+    label.Parent = page
+end, { Icon = "•" })
+```
+
+Custom pages are exposed to plugin loaders through `plugin:AddPage`; plugin
+loaders do not receive the raw PageManager. `plugin:OpenPage(name)` and
+`plugin:GetPages()` are also available. Plugins receive `Game`, `Players`,
+`Workspace`, `HttpService`, and `Script` in their context.
