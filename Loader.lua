@@ -204,12 +204,13 @@ local function startSynAdmin(options)
     return manager
 end
 
--- Support both loadstring(source)(options) and the older two-step form:
--- loadstring(source)()(options).
+-- Calling loadstring(source)() starts with default options. Options can still
+-- be passed directly as loadstring(source)(options).
 if initialOptions == nil then
-    return startSynAdmin
+    return startSynAdmin({})
 end
 return startSynAdmin(initialOptions)
+
 
 
 

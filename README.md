@@ -21,9 +21,8 @@ local pageManager = loadstring(game:HttpGet(
 ))({ Debug = true })
 -- Short form: loadstring(game:HttpGet("https://raw.githubusercontent.com/YetYoursTruly/Syn-Admin/main/Loader.lua"))(true)
 
--- The older two-step form is still supported:
--- local startSynAdmin = loadstring(game:HttpGet(url))()
--- local pageManager = startSynAdmin({ Debug = true })
+-- Calling with no arguments starts using defaults:
+-- local pageManager = loadstring(game:HttpGet(url))()
 ```
 
 Debug modules should return a function that receives a context table. They
@@ -91,3 +90,4 @@ Custom pages are exposed to plugin loaders through `plugin:AddPage`; plugin
 loaders do not receive the raw PageManager. `plugin:OpenPage(name)` and
 `plugin:GetPages()` are also available. Plugins receive `Game`, `Players`,
 `Workspace`, `HttpService`, and `Script` in their context.
+
